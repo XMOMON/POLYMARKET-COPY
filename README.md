@@ -142,26 +142,61 @@ Or if you use OpenClaw on your machine, you can add these as OpenClaw cron jobs 
 
 Edit `copytrade-config.json` before running:
 
+### Basic options
+
 ```json
 {
   "risk": {
-    "max_trades_per_day": 20,          // Maximum trades per day (limit to avoid overtrading)
+    "max_trades_per_day": 20,          // Maximum trades per day
     "max_trade_usdc": 100.0,           // Maximum USDC per trade (paper size)
     "min_trade_usdc": 1.0              // Minimum trade size
   },
-  "scanner": {
-    "min_win_rate": 0.70,              // Only follow traders with >=70% win rate
-    "min_resolved_trades": 5,          // Must have at least 5 resolved trades
-    "max_traders_to_watch": 4,         // Number of top traders to copy
-    "leaderboard_limit": 10,           // How many leaderboard entries to scan
-    "time_period": "WEEK"              // WEEK, MONTH, or DAY
-  },
   "execution": {
-    "mode": "dry-run",                 // "dry-run" (paper) or "live" (real money)
+    "mode": "dry-run",                 // "dry-run" (paper) or "live"
     "order_type": "market"             // "market" or "limit"
   }
 }
 ```
+
+### Choose traders to copy
+
+**Option A: Automatic leaderboard scan (default)**
+
+```json
+"scanner": {
+  "min_win_rate": 0.70,              // Only traders with >=70% win rate
+  "min_resolved_trades": 5,          // At least 5 resolved trades
+  "max_traders_to_watch": 4,         // Number of top traders to copy
+  "leaderboard_limit": 10,           // How many leaderboard entries to scan
+  "time_period": "WEEK",             // Performance window: WEEK, MONTH, DAY
+  "categories": ["SPORTS","CRYPTO","POLITICS"]
+}
+```
+
+**Option B: Manual trader selection** (override leaderboard)
+
+Add wallet addresses directly:
+
+```json
+"scanner": {
+  "manual_traders": [
+    {
+      "wallet": "0x1234...abcd",
+      "name": "TraderOne"
+    },
+    {
+      "wallet": "0x5678...efgh",
+      "name": "TraderTwo"
+    }
+  ]
+}
+```
+
+When `manual_traders` is non-empty, the `watch` command will analyze only those wallets and copy their trades. You can still set `max_traders_to_watch` but it's ignored — all manual traders are followed.
+
+---
+
+## Automation (Cron Jobs)
 
 ---
 

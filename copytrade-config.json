@@ -15,7 +15,8 @@
       "SPORTS",
       "CRYPTO",
       "POLITICS"
-    ]
+    ],
+    "manual_traders": []
   },
   "polling": {
     "trade_check_interval_min": 60,

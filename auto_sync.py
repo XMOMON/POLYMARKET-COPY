@@ -17,6 +17,7 @@ TRACKED_FILES = [
     "dashboard.html",
     "copytrade-config.json",
     "README.md",
+    "auto_sync.py",
 ]
 
 def git(args):
