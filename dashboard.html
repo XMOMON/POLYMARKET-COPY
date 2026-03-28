@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polymarket Paper Trader Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3);
+            padding: 24px;
+        }
+        header {
+            padding: 24px 48px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .header-logo {
+            display: flex; align-items: center; gap: 12px;
+            font-size: 24px; font-weight: 800; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #60a5fa, #c084fc);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header-status { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+        .status-dot {
+            width: 8px; height: 8px; background-color: var(--accent-green); border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 24px; width: 100%; display: grid; grid-template-columns: 3fr 1fr; gap: 24px; flex: 1; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+        .stat-card { display: flex; flex-direction: column; gap: 8px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px 0 rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
+        .stat-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); }
+        .stat-value.up { color: var(--accent-green); } .stat-value.down { color: var(--accent-red); }
+
+        .section-title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary); display: flex; align-items: center; gap: 12px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: -8px; }
+        th { text-align: left; padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 16px; background: rgba(30,41,59,0.4); font-size: 14px; }
+        tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; } tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        tr:hover td { background: rgba(30,41,59,0.8); }
+        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .badge.buy { background: rgba(16,185,129,0.15); color: var(--accent-green); } .badge.sell { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+
+        .trader-list { display: flex; flex-direction: column; gap: 12px; }
+        .trader-card { padding: 16px; background: rgba(15,23,42,0.4); border-radius: 12px; border: 1px solid var(--border-glass); display: flex; flex-direction: column; gap: 6px; }
+        .trader-name { font-weight: 600; font-size: 15px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .trader-stats { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); }
+        .highlight-wr { color: var(--accent-primary); font-weight: 700; }
+        #last-updated { font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .market-title { color: var(--text-primary); font-weight: 500; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .monospaced { font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .chart-container { position: relative; height: 200px; margin-top: 16px; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-logo">🦞 Polymarket Paper Trader</div>
+        <div class="header-status"><div class="status-dot"></div>Copytrade Agent Active</div>
+    </header>
+
+    <div class="container fade-in">
+        <main>
+            <div class="stats-grid">
+                <div class="glass-panel stat-card"><span class="stat-label">Virtual Balance</span><span class="stat-value monospaced" id="stat-balance">$0.00</span></div>
+                <div class="glass-panel stat-card"><span class="stat-label">Total Invested</span><span class="stat-value monospaced" id="stat-invested">$0.00</span></div>
+                <div class="glass-panel stat-card"><span class="stat-label">Est. P&L</span><span class="stat-value monospaced" id="stat-pnl">$0.00</span></div>
+                <div class="glass-panel stat-card"><span class="stat-label">Win Rate</span><span class="stat-value monospaced" id="stat-winrate">N/A</span></div>
+                <div class="glass-panel stat-card"><span class="stat-label">Total Trades</span><span class="stat-value monospaced" id="stat-trades">0</span></div>
+                <div class="glass-panel stat-card"><span class="stat-label">Active Positions</span><span class="stat-value monospaced" id="stat-active">0</span></div>
+            </div>
+
+            <div class="glass-panel">
+                <h2 class="section-title">📈 Equity Curve (Paper Balance Over Time)</h2>
+                <div class="chart-container"><canvas id="equityChart"></canvas></div>
+            </div>
+
+            <div class="glass-panel" style="margin-top:24px;">
+                <h2 class="section-title">📁 Active Virtual Portfolio</h2>
+                <table id="portfolio-table">
+                    <thead><tr><th>Side</th><th>Market</th><th>Outcome</th><th>Avg Price</th><th>Shares</th><th>Total Cost</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+                <div id="no-positions" style="display:none; padding:32px 0; text-align:center; color:var(--text-secondary);">No active positions.</div>
+            </div>
+        </main>
+
+        <aside>
+            <div class="glass-panel" style="margin-bottom:24px;">
+                <h2 class="section-title" style="font-size:16px;">👁️ Watched Traders</h2>
+                <div class="trader-list" id="trader-list"></div>
+                <div id="no-traders" style="display:none; padding:16px 0; text-align:center; color:var(--text-secondary); font-size:13px;">No traders watched.</div>
+            </div>
+            <div id="last-updated">Status: Waiting for data...</div>
+        </aside>
+    </div>
+
+    <section class="container fade-in" style="margin-top:0;">
+        <div class="glass-panel">
+            <h2 class="section-title">📜 Full Trade History</h2>
+            <table id="history-table">
+                <thead><tr><th>Date</th><th>Trader</th><th>Market</th><th>Outcome</th><th>Side</th><th>Price</th><th>Size (USDC)</th><th>Status</th></tr></thead>
+                <tbody></tbody>
+            </table>
+            <div id="no-history" style="display:none; padding:32px 0; text-align:center; color:var(--text-secondary);">No trade history yet.</div>
+        </div>
+    </section>
+
+    <script>
+        const moneyFmt = new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', minimumFractionDigits:2 });
+        const numFmt = new Intl.NumberFormat('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+
+        let lastStateStr = "";
+        let loadedState = false, loadedTrades = false;
+        let equityChartInstance = null;
+
+        function loadScript(src, onload) {
+            const s = document.createElement('script');
+            s.src = src + '?t=' + Date.now();
+            s.onload = onload;
+            s.onerror = onload;
+            document.body.appendChild(s);
+        }
+
+        function fetchData() {
+            loadedState = false; loadedTrades = false;
+            loadScript('copytrade-state.js', () => { loadedState = true; tryUpdate(); });
+            loadScript('trades-full.js', () => { loadedTrades = true; tryUpdate(); });
+        }
+
+        function tryUpdate() {
+            if (loadedState && loadedTrades) {
+                const data = window.POL_STATE;
+                if (data) {
+                    const currentStr = JSON.stringify(data);
+                    if (currentStr !== lastStateStr) {
+                        updateDashboard(data);
+                        lastStateStr = currentStr;
+                    }
+                }
+                document.getElementById('last-updated').innerText = "Last updated: " + new Date().toLocaleTimeString();
+                loadedState = false; loadedTrades = false;
+            }
+        }
+
+        function updateDashboard(state) {
+            const balance = state.paper_balance || 10000.0;
+            const portfolio = state.paper_portfolio || [];
+            let totalInvested = 0; portfolio.forEach(p => totalInvested += (p.cost_usdc || 0));
+            const startBalance = 10000.0;
+            const accountValue = balance + (state.total_position_value || 0);
+            const pnl = (accountValue - startBalance) + (state.unrealized_pnl || 0);
+
+            document.getElementById('stat-balance').innerText = moneyFmt.format(balance);
+            document.getElementById('stat-invested').innerText = moneyFmt.format(totalInvested);
+            const pnlEl = document.getElementById('stat-pnl');
+            pnlEl.innerText = (pnl >= 0 ? "+" : "") + moneyFmt.format(pnl);
+            pnlEl.className = "stat-value monospaced " + (pnl > 0 ? "up" : (pnl < 0 ? "down" : ""));
+
+            // Stats from trade history
+            const fullTrades = window.FULL_TRADES || [];
+            const totalTrades = fullTrades.length;
+            const activePositions = portfolio.length;
+
+            // Simple win rate: for paper trades, if position still open we can't count. So we show N/A or compute from realized if we had that.
+            document.getElementById('stat-trades').innerText = totalTrades;
+            document.getElementById('stat-active').innerText = activePositions;
+            document.getElementById('stat-winrate').innerText = "N/A";
+
+            // Portfolio Table
+            const tbody = document.querySelector('#portfolio-table tbody');
+            tbody.innerHTML = '';
+            if (portfolio.length === 0) {
+                document.getElementById('portfolio-table').style.display = 'none';
+                document.getElementById('no-positions').style.display = 'block';
+            } else {
+                document.getElementById('portfolio-table').style.display = 'table';
+                document.getElementById('no-positions').style.display = 'none';
+                portfolio.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                for (let pos of portfolio) {
+                    const tr = document.createElement('tr');
+                    const sideClass = pos.side === 'BUY' ? 'buy' : 'sell';
+                    const sideHtml = `<span class="badge ${sideClass}">${pos.side}</span>`;
+                    tr.innerHTML = `<td>${sideHtml}</td><td class="market-title" title="${pos.market}">${pos.market}</td><td style="font-weight:600">${pos.outcome}</td><td class="monospaced">$${numFmt.format(pos.avg_price)}</td><td class="monospaced">${numFmt.format(pos.shares)}</td><td class="monospaced">${moneyFmt.format(pos.cost_usdc)}</td>`;
+                    tbody.appendChild(tr);
+                }
+            }
+
+            // Watched Traders
+            const watched = state.watched_traders || [];
+            const tlist = document.getElementById('trader-list'); tlist.innerHTML = '';
+            if (watched.length === 0) {
+                document.getElementById('no-traders').style.display = 'block';
+            } else {
+                document.getElementById('no-traders').style.display = 'none';
+                for (let tr of watched) {
+                    const wrStr = tr.win_rate ? Math.round(tr.win_rate * 100) + "%" : "N/A";
+                    const card = document.createElement('div'); card.className = 'trader-card';
+                    card.innerHTML = `<div class="trader-name" title="${tr.name}">${tr.name}</div><div class="trader-stats"><span>W/L: ${tr.wins || 0}/${tr.losses || 0}</span><span class="highlight-wr">WR: ${wrStr}</span></div><div class="trader-stats" style="margin-top:2px; font-size:11px"><span>PNL: ${moneyFmt.format(tr.pnl || 0)}</span></div>`;
+                    tlist.appendChild(card);
+                }
+            }
+
+            // Full Trade History
+            const histBody = document.querySelector('#history-table tbody');
+            histBody.innerHTML = '';
+            if (fullTrades.length === 0) {
+                document.getElementById('history-table').style.display = 'none';
+                document.getElementById('no-history').style.display = 'block';
+            } else {
+                document.getElementById('history-table').style.display = 'table';
+                document.getElementById('no-history').style.display = 'none';
+                const sorted = [...fullTrades].sort((a,b) => b.timestamp - a.timestamp);
+                for (let t of sorted) {
+                    const date = new Date(t.timestamp * 1000).toLocaleString();
+                    const sideClass = t.side === 'BUY' ? 'buy' : 'sell';
+                    const statusMap = {'paper':'🧪','placed':'✅','dry-run':'🧪','error':'❌','skipped':'⏭️'};
+                    const statusIcon = statusMap[t.status] || '❓';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td style="font-size:12px; color:var(--text-secondary)">${date}</td><td style="font-weight:600">${t.source_trader ? t.source_trader.substring(0,12)+'...' : 'Unknown'}</td><td class="market-title" title="${t.market}">${t.market}</td><td style="font-weight:600">${t.outcome}</td><td><span class="badge ${sideClass}">${t.side}</span></td><td class="monospaced">$${numFmt.format(t.price)}</td><td class="monospaced">${moneyFmt.format(t.size_usdc)}</td><td>${statusIcon} ${t.status}</td>`;
+                    histBody.appendChild(tr);
+                }
+            }
+
+            // Equity Curve: build from state.trade_history (recent closed/paper) + current balance
+            const trades = state.trade_history || [];
+            const balances = [];
+            // sort by timestamp ascending
+            const sortedTrades = [...trades].sort((a,b) => a.timestamp - b.timestamp);
+            sortedTrades.forEach(t => {
+                balances.push(t.balance_at_trade);
+            });
+            // Ensure at least one point
+            if (balances.length === 0) {
+                balances.push(startBalance);
+            }
+            // Add current balance as latest point
+            if (balances[balances.length-1] !== balance) {
+                balances.push(balance);
+            }
+            renderEquityChart(balances);
+        }
+
+        function renderEquityChart(balances) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            if (equityChartInstance) equityChartInstance.destroy();
+            equityChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: balances.map((_, i) => i + 1),
+                    datasets: [{
+                        label: 'Paper Balance (USDC)',
+                        data: balances,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Trade Sequence' }, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        fetchData();
+        setInterval(fetchData, 5000);
+    </script>
+</body>
+</html>

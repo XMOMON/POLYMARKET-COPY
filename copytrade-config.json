@@ -1,0 +1,33 @@
+{
+  "risk": {
+    "max_trade_pct": 0.05,
+    "max_trades_per_day": 20,
+    "min_trade_usdc": 1.0,
+    "max_trade_usdc": 500.0
+  },
+  "scanner": {
+    "min_win_rate": 0.65,
+    "min_resolved_trades": 1,
+    "max_traders_to_watch": 5,
+    "leaderboard_limit": 20,
+    "time_period": "WEEK",
+    "categories": [
+      "SPORTS",
+      "CRYPTO",
+      "POLITICS"
+    ]
+  },
+  "polling": {
+    "trade_check_interval_min": 60,
+    "leaderboard_scan_interval_hrs": 1
+  },
+  "execution": {
+    "mode": "dry-run",
+    "order_type": "market",
+    "slippage_pct": 0.03
+  },
+  "wallet": {
+    "private_key_env": "POLYMARKET_PRIVATE_KEY",
+    "funder_env": "POLYMARKET_FUNDER_ADDRESS"
+  }
+}

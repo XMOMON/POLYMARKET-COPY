@@ -1,0 +1,24 @@
+# Local state (generated)
+copytrade-state.json
+copytrade-state.js
+trades-full.js
+copytrade-trades.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual envs
+venv/
+.env/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Sensitive
+*.pem
+*.key
+secrets.json
