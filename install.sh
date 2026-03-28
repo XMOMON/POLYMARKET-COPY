@@ -35,14 +35,13 @@ echo "   ✓ Code downloaded"
 
 # 4. Install Python dependencies
 echo "[4/7] Installing Python packages..."
-pip3 install -q requests
+pip3 install -q -r requirements.txt
 echo "   ✓ Python dependencies installed"
 
 # 5. Prompt for configuration
 echo "[5/7] Configuration"
 read -p "   Enter your Polymarket wallet private key (leave empty if none): " PRIVATE_KEY
 read -p "   Enter SOCKS5 proxy URL (e.g., socks5://IP:PORT) or leave empty if none: " PROXY
-read -p "   Enter your license key (provided by seller): " LICENSE_KEY
 
 # 6. Set up environment variables
 ENV_FILE="$HOME/.polymarket_env"
@@ -54,14 +53,14 @@ EOF
 chmod 600 "$ENV_FILE"
 echo "   ✓ Environment variables saved"
 
-# 7. Configure copy script to use license
-if [ -n "$LICENSE_KEY" ]; then
-    echo "[6/7] Activating license..."
-    # Write license key to config
-    jq --arg key "$LICENSE_KEY" '.scanner.manual_traders = [] | .license_key = $key' copytrade-config.json > copytrade-config.json.tmp && mv copytrade-config.json.tmp copytrade-config.json || echo "   ⚠️  jq not installed, please add license_key manually to config"
-    echo "   ✓ License configured"
+# 7. License key (optional)
+echo "[6/7] License (optional)"
+read -p "   Path to your license.json file (leave empty if none): " LICENSE_PATH
+if [ -n "$LICENSE_PATH" ] && [ -f "$LICENSE_PATH" ]; then
+    cp "$LICENSE_PATH" ./license.json
+    echo "   ✓ License installed"
 else
-    echo "[6/7] Skipping license key (none provided)"
+    echo "   Skipping license — running in free tier (1 trader, 10 trades/day)"
 fi
 
 # 8. Set up cron jobs if user wants
