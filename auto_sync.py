@@ -17,6 +17,11 @@ TRACKED_FILES = [
     "dashboard.html",
     "copytrade-config.json",
     "README.md",
+    "install.sh",
+    "requirements.txt",
+    "license_check.py",
+    "tools/generate_license.py",
+    "SELLING.md",
     "auto_sync.py",
 ]
 
