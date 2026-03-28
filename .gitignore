@@ -21,4 +21,4 @@ Thumbs.db
 # Sensitive
 *.pem
 *.key
-secrets.json
+secrets.jsonlicense_private_key.pem

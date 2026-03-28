@@ -1043,9 +1043,41 @@ Examples:
     cfg = load_config()
     state = load_state()
 
+    # ================================================
+    # License Check & Tier Enforcement
+    # ================================================
+    FREE_TIER_MAX_TRADERS = 1
+    FREE_TIER_MAX_TRADES = 10
+
+    lic = None
+    try:
+        from pathlib import Path
+        license_path = Path("license.json")
+        if license_path.exists():
+            from license_check import load_license_from_file
+            lic = load_license_from_file(str(license_path))
+            if lic:
+                print("🔑 Valid license detected — premium features unlocked")
+                # License can override limits
+                if "max_traders" in lic:
+                    cfg["scanner"]["max_traders_to_watch"] = lic["max_traders"]
+                if "max_trades_per_day" in lic:
+                    cfg["risk"]["max_trades_per_day"] = lic["max_trades_per_day"]
+            else:
+                print("⚠️  Invalid or expired license — using free tier")
+    except Exception as e:
+        print(f"⚠️  License check failed: {e} — using free tier")
+
+    if not lic:
+        # Enforce free tier limits
+        cfg["scanner"]["max_traders_to_watch"] = FREE_TIER_MAX_TRADERS
+        cfg["risk"]["max_trades_per_day"] = FREE_TIER_MAX_TRADES
+
     print(f"\n🦞 Polymarket Copy Trader v1.0")
     print(f"   Config: {CONFIG_PATH}")
-    print(f"   State:  {STATE_PATH}\n")
+    print(f"   State:  {STATE_PATH}")
+    print(f"   License: {'✅ Active' if lic else '🆓 Free Tier (1 trader, 10 trades/day)'}")
+    print()
 
     if args.command == "scan":
         cmd_scan(cfg, state)
