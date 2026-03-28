@@ -18,7 +18,7 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Sensitive
-*.pem
+# Sensitive — keep these local
+license_private_key.pem
+secrets.json
 *.key
-secrets.jsonlicense_private_key.pem
