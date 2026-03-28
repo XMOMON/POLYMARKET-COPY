@@ -66,15 +66,16 @@ def main():
     args = parser.parse_args()
     
     lic = sign_license(args.email, args.days, args.tier)
-    output = json.dumps(lic, indent=2)
+    output = json.dumps(lic, separators=(',', ':'))  # compact, no extra whitespace
+    
+    # Print to stdout for capture, and also save to a file
     print(output)
     
-    # Save to file for convenience
     safe_email = args.email.replace('@', '_at_').replace('.', '_dot')
     out_file = f"license_{safe_email}_{args.tier}.json"
     with open(out_file, "w") as f:
         f.write(output)
-    print(f"\nSaved to: {out_file}")
+    # Do NOT print extra messages that would corrupt JSON capture
 
 if __name__ == "__main__":
     main()
