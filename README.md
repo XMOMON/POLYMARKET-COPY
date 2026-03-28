@@ -18,26 +18,16 @@ Automatically copy top traders on Polymarket in paper (simulation) mode. Include
 
 3. **(Optional) Set up a proxy if needed**
 
-   Polymarket may be restricted in some regions. If you can't access it, get a SOCKS5 proxy from:
+   If you need a SOCKS5 proxy, you can get one from:
 
    - https://free-proxy-list.net/en/us-proxy.html
    - https://spys.one/en/socks-proxy-list/
    - https://www.freeproxy.world/?type=socks5
 
-   Choose a working proxy and export it:
+   Then export it:
    ```bash
    export ALL_PROXY="socks5://IP:PORT"
    ```
-   Some proxies require authentication:
-   ```bash
-   export ALL_PROXY="socks5://username:password@IP:PORT"
-   ```
-
-   Test your proxy:
-   ```bash
-   curl -s https://api.ipify.org
-   ```
-   Should return a different IP than your real one.
 
    If you don't need a proxy, skip this step.
 
