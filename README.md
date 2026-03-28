@@ -16,10 +16,29 @@ Automatically copy top traders on Polymarket in paper (simulation) mode. Include
    ```
    (If you don't have Python 3.9+, install it first from python.org)
 
-3. **Set up proxy (required in some regions)**
+3. **(Optional) Set up a proxy if needed**
+
+   Polymarket may be restricted in some regions. If you can't access it, get a SOCKS5 proxy from:
+
+   - https://free-proxy-list.net/en/us-proxy.html
+   - https://spys.one/en/socks-proxy-list/
+   - https://www.freeproxy.world/?type=socks5
+
+   Choose a working proxy and export it:
    ```bash
-   export ALL_PROXY="socks5://your-proxy:port"
+   export ALL_PROXY="socks5://IP:PORT"
    ```
+   Some proxies require authentication:
+   ```bash
+   export ALL_PROXY="socks5://username:password@IP:PORT"
+   ```
+
+   Test your proxy:
+   ```bash
+   curl -s https://api.ipify.org
+   ```
+   Should return a different IP than your real one.
+
    If you don't need a proxy, skip this step.
 
 4. **Run your first scan**
@@ -73,9 +92,20 @@ cd POLYMARKET-COPY
 # 2. Install Python packages
 pip3 install requests
 
-# 3. (Optional) Set proxy if you need it
-export ALL_PROXY="socks5://127.0.0.1:4145"   # example: Tor
-# To make permanent, add to ~/.zshrc or ~/.bashrc
+# 3. (Optional) Set up a proxy if needed
+   If you can't access Polymarket, get a SOCKS5 proxy from:
+   - https://free-proxy-list.net/en/us-proxy.html
+   - https://spys.one/en/socks-proxy-list/
+   - https://www.freeproxy.world/?type=socks5
+
+   Then export:
+   ```bash
+   export ALL_PROXY="socks5://IP:PORT"
+   ```
+   For authentication: `socks5://user:pass@IP:PORT`
+
+   Make it permanent by adding the export line to your `~/.zshrc` or `~/.bashrc`.
+   Test with: `curl -s https://api.ipify.org`
 ```
 
 ### First Run
