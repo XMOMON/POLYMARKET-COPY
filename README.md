@@ -4,50 +4,43 @@ Automatically copy top traders on Polymarket in paper (simulation) mode. Include
 
 ## Quick Start (5 minutes)
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/XMOMON/POLYMARKET-COPY.git
-   cd POLYMARKET-COPY
-   ```
+### Option A: Automated Installer (Easiest)
 
-2. **Install Python dependencies**
-   ```bash
-   pip3 install requests
-   ```
-   (If you don't have Python 3.9+, install it first from python.org)
+We provide a one-command installer for Ubuntu/Debian:
 
-3. **(Optional) Set up a proxy if needed**
+```bash
+git clone https://github.com/XMOMON/POLYMARKET-COPY.git
+cd POLYMARKET-COPY
+chmod +x install.sh
+./install.sh
+```
 
-   If you need a SOCKS5 proxy, you can get one from:
+The installer will:
+- Install system dependencies
+- Set up Python environment
+- Ask for your Polymarket private key (optional)
+- Configure proxy if needed
+- Set up hourly cron jobs
+- Generate `license.json` if you provide a license key
 
-   - https://free-proxy-list.net/en/us-proxy.html
-   - https://spys.one/en/socks-proxy-list/
-   - https://www.freeproxy.world/?type=socks5
+After installation, simply run:
+```bash
+source $HOME/.polymarket_env   # if you set private key
+python3 polymarket_copytrade.py watch   # first scan
+python3 polymarket_copytrade.py ui      # open dashboard
+```
 
-   Then export it:
-   ```bash
-   export ALL_PROXY="socks5://IP:PORT"
-   ```
+### Option B: Manual Setup
 
-   If you don't need a proxy, skip this step.
+If you prefer to install manually (or on macOS):
 
-4. **Run your first scan**
-   ```bash
-   python3 polymarket_copytrade.py watch
-   ```
-   This fetches the top 5 traders by win rate.
+```bash
+git clone https://github.com/XMOMON/POLYMARKET-COPY.git
+cd POLYMARKET-COPY
+pip3 install -r requirements.txt
+```
 
-5. **Start the bot (paper mode)**
-   ```bash
-   python3 polymarket_copytrade.py copy
-   ```
-   This will check for new trades from those traders and simulate them in your virtual portfolio.
-
-6. **Open the dashboard**
-   ```bash
-   python3 polymarket_copytrade.py ui
-   ```
-   A browser window opens showing your portfolio, stats, and trade history.
+Continue with step 3 below.
 
 That's it! The bot will now check every hour for new trades and update the dashboard automatically (if you set up cron — see below).
 
@@ -60,6 +53,32 @@ That's it! The bot will now check every hour for new trades and update the dashb
 - **Web dashboard** — see balance, positions, P&L, full history
 - **Equity curve** — track performance over time
 - **Telegram alerts** — get notified when new trades are copied (optional)
+
+---
+
+## Licensing & Upgrades
+
+This bot is provided **free of charge** with the following limitations:
+
+- **Free tier:** 1 watched trader, max 10 trades per day
+
+If you need higher limits (more traders, more trades per day), purchase a license key:
+
+- **Basic License** ($49 one-time): Up to 3 traders, 50 trades/day
+- **Pro License** ($99 one-time): Up to 5 traders, 200 trades/day
+- **Unlimited** ($199 one-time): No limits
+
+A license key removes the restrictions and supports ongoing development.
+
+### How to Use a License Key
+
+After installation, place your `license.json` file in the bot directory (same folder as `polymarket_copytrade.py`). The installer can also accept a license key and generate this file for you.
+
+You'll see a message on startup: "🔑 Valid license detected".
+
+### Purchasing a License
+
+Contact the seller (or visit our Telegram channel) to purchase a license. You'll receive a `license.json` file via email. Simply place it in the working directory.
 
 ---
 
@@ -193,6 +212,8 @@ Add wallet addresses directly:
 ```
 
 When `manual_traders` is non-empty, the `watch` command will analyze only those wallets and copy their trades. You can still set `max_traders_to_watch` but it's ignored — all manual traders are followed.
+
+> **Note on limits:** The free tier restricts `max_traders_to_watch` to 1 and `max_trades_per_day` to 10, regardless of your config. A paid license key (see [Licensing & Upgrades](#licensing--upgrades)) raises these caps.
 
 ---
 
